@@ -16,6 +16,13 @@ public class AtomeBehaviour : MonoBehaviour
     private void Start()
     {
         AtomeData = new Atome(Nom, Poids);
+        Rigidbody rb = GetComponent<Rigidbody>();
+        if (rb != null)
+        {
+            float forceMagnitude = 15f; // Change this to whatever value you like
+            Vector3 randomDirection = Random.onUnitSphere;
+            rb.AddForce(randomDirection * forceMagnitude, ForceMode.Impulse);
+        }
     }
 
     private void OnCollisionEnter(Collision collision)
@@ -44,7 +51,7 @@ public class AtomeBehaviour : MonoBehaviour
             Rigidbody rb = newMoleculeObject.GetComponent<Rigidbody>();
             if (rb != null)
             {
-                float forceMagnitude = 5f; // Change this to whatever value you like
+                float forceMagnitude = 15f; // Change this to whatever value you like
                 Vector3 randomDirection = Random.onUnitSphere;
                 rb.AddForce(randomDirection * forceMagnitude, ForceMode.Impulse);
             }
