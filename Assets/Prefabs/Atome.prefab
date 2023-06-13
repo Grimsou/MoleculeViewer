@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 2513774269515415230}
   - component: {fileID: 5691212423159728987}
   - component: {fileID: 5803108508539815384}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Atome
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -109,9 +109,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: acb94063982da284e9460c031aec42cb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Nom: 
-  Poids: 0
   MoleculePrefab: {fileID: 3426977895609997298, guid: 6afe54e708464094f83c73166a7332dc, type: 3}
+  Nom: Default Atom
+  Poids: 2.5
 --- !u!54 &5803108508539815384
 Rigidbody:
   m_ObjectHideFlags: 0

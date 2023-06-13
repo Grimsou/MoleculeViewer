@@ -21,6 +21,8 @@ public class GameManager : MonoBehaviour
     private List<string> eventLog = new List<string>();
     private GameObject selectedObject;
 
+    private int selectableLayer;
+
     private void Start()
     {
         eventManager = CustomActionManager.Instance;
@@ -43,6 +45,8 @@ public class GameManager : MonoBehaviour
         eventManager.OnAtomCollide += OnAtomCollide;
         eventManager.OnAtomDies += OnAtomDies;
         eventManager.OnMoleculeSpawn += OnMoleculeSpawn;
+
+        selectableLayer = LayerMask.NameToLayer("Selectable");
     }
 
     public void StartSimulation()
@@ -150,15 +154,34 @@ public class GameManager : MonoBehaviour
 
     public void ShowObjectData(GameObject obj)
     {
+        if (obj.layer != selectableLayer)
+        {
+            Debug.Log("Object cannot be selected.");
+            return;
+        }
+
         selectedObject = obj;
 
-        // Récupérer les données de l'objet sélectionné
-        string objectName = obj.name;
-        string objectWeight = obj.GetComponent<AtomeBehaviour>().AtomeData.Poids.ToString();
+        if (obj.TryGetComponent(out AtomeBehaviour atomBehaviour))
+        {
+            // Récupérer les données de l'objet Atome
+            string objectName = atomBehaviour.AtomeData.Nom;
+            string objectWeight = atomBehaviour.AtomeData.Poids.ToString();
 
-        // Mettre à jour les textes dans le panneau d'affichage des données de l'objet
-        objectNameText.text = objectName;
-        objectWeightText.text = objectWeight;
+            // Mettre à jour les textes dans le panneau d'affichage des données de l'objet
+            objectNameText.text = objectName;
+            objectWeightText.text = objectWeight;
+        }
+        else if (obj.TryGetComponent(out MoleculeBehaviour moleculeBehaviour))
+        {
+            // Récupérer les données de l'objet Molecule
+            string objectName = moleculeBehaviour.MoleculeData.Nom;
+            string objectWeight = moleculeBehaviour.MoleculeData.ComputeMass().ToString();
+
+            // Mettre à jour les textes dans le panneau d'affichage des données de l'objet
+            objectNameText.text = objectName;
+            objectWeightText.text = objectWeight;
+        }
 
         // Afficher le panneau d'affichage des données de l'objet
         objectDataPanel.SetActive(true);
@@ -175,6 +198,21 @@ public class GameManager : MonoBehaviour
         if (isSimulationRunning && !isSimulationPaused)
         {
             // Logique de mise à jour de la simulation en cours
+        }
+
+        // Vérifier si l'utilisateur a cliqué avec le bouton gauche de la souris
+        if (Input.GetMouseButtonDown(0))
+        {
+            // Créer un raycast à partir de la position du curseur de souris
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            RaycastHit hit;
+
+            // Lancer le raycast et vérifier s'il a frappé un objet avec le layer "Selectable"
+            if (Physics.Raycast(ray, out hit) && hit.collider.gameObject.layer == selectableLayer)
+            {
+                // Sélectionner l'objet
+                ShowObjectData(hit.collider.gameObject);
+            }
         }
     }
 }
