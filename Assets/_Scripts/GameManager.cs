@@ -23,6 +23,9 @@ public class GameManager : MonoBehaviour
 
     private int selectableLayer;
 
+    private List<AtomeBehaviour> atomeBehaviours;
+    private Dictionary<AtomeBehaviour, Vector3> atomeInitialPositions;
+
     private void Start()
     {
         eventManager = CustomActionManager.Instance;
@@ -91,18 +94,21 @@ public class GameManager : MonoBehaviour
 
         // Logique pour arrêter la simulation
         eventManager.TriggerSimulationEnd();
+
+        // Réinitialiser les positions des atomes
+        ResetAtomPositions();
     }
 
     public void AddEventLog(string eventMessage)
     {
         eventLog.Add(eventMessage);
-        
+
         // Limite la taille du journal à x événements
         if (eventLog.Count > eventLogSize)
         {
             eventLog.RemoveAt(0);
         }
-        
+
         UpdateEventLogText();
     }
 
@@ -138,6 +144,7 @@ public class GameManager : MonoBehaviour
     {
         AddEventLog("Simulation Start");
         // Mettez ici votre code pour traiter l'événement de démarrage de la simulation
+
     }
 
     private void OnSimulationEnd()
@@ -213,6 +220,44 @@ public class GameManager : MonoBehaviour
                 // Sélectionner l'objet
                 ShowObjectData(hit.collider.gameObject);
             }
+        }
+    }
+
+    private void ResetAtomPositions()
+    {
+        foreach (var pair in atomeInitialPositions)
+        {
+            pair.Key.transform.position = pair.Value;
+        }
+    }
+
+    public void RegisterAtom(AtomeBehaviour atomBehaviour)
+    {
+        if (atomeBehaviours == null)
+        {
+            atomeBehaviours = new List<AtomeBehaviour>();
+        }
+
+        atomeBehaviours.Add(atomBehaviour);
+
+        if (atomeInitialPositions == null)
+        {
+            atomeInitialPositions = new Dictionary<AtomeBehaviour, Vector3>();
+        }
+
+        atomeInitialPositions.Add(atomBehaviour, atomBehaviour.transform.position);
+    }
+
+    public void UnregisterAtom(AtomeBehaviour atomBehaviour)
+    {
+        if (atomeBehaviours != null && atomeBehaviours.Contains(atomBehaviour))
+        {
+            atomeBehaviours.Remove(atomBehaviour);
+        }
+
+        if (atomeInitialPositions != null && atomeInitialPositions.ContainsKey(atomBehaviour))
+        {
+            atomeInitialPositions.Remove(atomBehaviour);
         }
     }
 }

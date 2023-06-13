@@ -8,6 +8,27 @@ public class AtomeBehaviour : MonoBehaviour
 
     public Atome AtomeData { get; set; }
 
+    private GameManager gameManager;
+
+    private void Awake()
+    {
+        gameManager = FindObjectOfType<GameManager>();
+    }
+
+    private void OnEnable()
+    {
+        gameManager.RegisterAtom(this);
+        CustomActionManager.Instance.OnSimulationStart += AnimateAtom;
+        CustomActionManager.Instance.OnSimulationPause += FreezeAtom;
+    }
+
+    private void OnDisable()
+    {
+        gameManager.UnregisterAtom(this);
+        CustomActionManager.Instance.OnSimulationStart -= AnimateAtom;
+        CustomActionManager.Instance.OnSimulationPause -= FreezeAtom;
+    }
+    
     private void Start()
     {
         AtomeData = new Atome(Nom, Poids);
@@ -60,5 +81,28 @@ public class AtomeBehaviour : MonoBehaviour
     {
         // Déclencher l'action OnAtomDies
         CustomActionManager.Instance.TriggerAtomDies(this);
+    }
+    
+    private void AnimateAtom()
+    {
+        // Ajouter ici la logique d'animation de l'atome pendant la simulation
+        Rigidbody rb = GetComponent<Rigidbody>();
+        if (rb != null)
+        {
+            float forceMagnitude = 15f; // Change this to whatever value you like
+            Vector3 randomDirection = Random.onUnitSphere;
+            rb.AddForce(randomDirection * forceMagnitude, ForceMode.Impulse);
+        }
+    }
+
+    private void FreezeAtom()
+    {
+        // Ajouter ici la logique pour immobiliser l'atome pendant la pause de la simulation
+        Rigidbody rb = GetComponent<Rigidbody>();
+        if (rb != null)
+        {
+            rb.velocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+        }
     }
 }
