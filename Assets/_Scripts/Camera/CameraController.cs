@@ -25,7 +25,7 @@ public class CameraController : MonoBehaviour
     [SerializeField] private KeyCode backwardKey = KeyCode.S;
     [Tooltip("Touche pour monter.")]
     [SerializeField] private KeyCode upKey = KeyCode.LeftShift;
-    [Tooltip("Touche pour descendre.")]
+    [Tooltip("Touche pour descendre.")]    
     [SerializeField] private KeyCode downKey = KeyCode.LeftAlt;
     [Tooltip("Touche pour se déplacer à gauche.")]
     [SerializeField] private KeyCode leftKey = KeyCode.Q;
@@ -56,9 +56,6 @@ public class CameraController : MonoBehaviour
         HandleObjectAlignment();
     }
 
-    /// <summary>
-    /// Handles the rotation of the camera based on mouse input.
-    /// </summary>
     private void HandleMouseRotation()
     {
         if (Input.GetMouseButton(1))
@@ -74,11 +71,6 @@ public class CameraController : MonoBehaviour
         }
     }
 
-
-
-    /// <summary>
-    /// Handles the zoom functionality of the camera.
-    /// </summary>
     private void HandleZoom()
     {
         float zoomChange = Input.GetAxis("Mouse ScrollWheel") * zoomSpeed;
@@ -86,9 +78,6 @@ public class CameraController : MonoBehaviour
         mainCamera.fieldOfView = newSize;
     }
 
-    /// <summary>
-    /// Handles the movement of the camera based on keyboard input.
-    /// </summary>
     private void HandleMovement()
     {
         Vector3 direction = Vector3.zero;
@@ -121,9 +110,6 @@ public class CameraController : MonoBehaviour
         transform.position += direction * moveSpeed * Time.deltaTime;
     }
 
-    /// <summary>
-    /// Resets the camera to its initial position and rotation when the reset key is pressed.
-    /// </summary>
     private void HandleResetPosition()
     {
         if (Input.GetKeyDown(resetKey))
@@ -133,9 +119,6 @@ public class CameraController : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Aligns the camera with the selected object when the align key is pressed.
-    /// </summary>
     private void HandleObjectAlignment()
     {
         if (Input.GetKeyDown(alignKey))
@@ -146,16 +129,8 @@ public class CameraController : MonoBehaviour
             if (Physics.Raycast(ray, out hit))
             {
                 Transform selectedObject = hit.transform;
-                AlignWithObject(selectedObject);
+                CustomActionManager.Instance.TriggerObjectSelected(selectedObject.gameObject);
             }
         }
-    }
-
-    /// <summary>
-    /// Aligns the camera with the given target object.
-    /// </summary>
-    public void AlignWithObject(Transform target)
-    {
-        transform.LookAt(target);
     }
 }

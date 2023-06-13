@@ -2,27 +2,19 @@ using UnityEngine;
 
 public class AtomeBehaviour : MonoBehaviour
 {
-    [Header("Paramètres de l'atome")]
-    [Tooltip("Nom de l'atome.")]
+    [SerializeField] private GameObject MoleculePrefab;
     [SerializeField] private string Nom;
-
-    [Tooltip("Poids de l'atome.")]
     [SerializeField] private float Poids;
 
-    [Tooltip("Préfabriqué de la molécule.")]
-    public GameObject MoleculePrefab;
-
-    private Atome AtomeData;
+    public Atome AtomeData { get; set; }
 
     private void Start()
     {
         AtomeData = new Atome(Nom, Poids);
-
-        // Ajouter une force aléatoire à l'atome
         Rigidbody rb = GetComponent<Rigidbody>();
         if (rb != null)
         {
-            float forceMagnitude = 15f; // Changez cette valeur selon vos préférences
+            float forceMagnitude = 15f; // Change this to whatever value you like
             Vector3 randomDirection = Random.onUnitSphere;
             rb.AddForce(randomDirection * forceMagnitude, ForceMode.Impulse);
         }
@@ -54,10 +46,19 @@ public class AtomeBehaviour : MonoBehaviour
             Rigidbody rb = newMoleculeObject.GetComponent<Rigidbody>();
             if (rb != null)
             {
-                float forceMagnitude = 15f; // Changez cette valeur selon vos préférences
+                float forceMagnitude = 15f; // Change this to whatever value you like
                 Vector3 randomDirection = Random.onUnitSphere;
                 rb.AddForce(randomDirection * forceMagnitude, ForceMode.Impulse);
             }
+
+            // Déclencher l'action OnMoleculeSpawn
+            CustomActionManager.Instance.TriggerMoleculeSpawn(newMoleculeObject.GetComponent<MoleculeBehaviour>().MoleculeData);
         }
+    }
+
+    private void OnDestroy()
+    {
+        // Déclencher l'action OnAtomDies
+        CustomActionManager.Instance.TriggerAtomDies(this);
     }
 }
