@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.Events;
+using System.Collections.Generic;
 
 public class CustomActionManager : MonoBehaviour
 {
@@ -29,6 +30,8 @@ public class CustomActionManager : MonoBehaviour
     public UnityAction OnSimulationStart;
     public UnityAction OnSimulationEnd;
     public UnityAction OnSimulationPause;
+
+    private List<string> eventLog = new List<string>();
 
     // Méthodes pour déclencher les événements
 
@@ -72,5 +75,21 @@ public class CustomActionManager : MonoBehaviour
     {
         OnSimulationPause?.Invoke();
         Debug.Log("Simulation Pause event triggered.");
+    }
+
+    public List<string> GetEventLog()
+    {
+        return eventLog;
+    }
+
+    private void AddEventToLog(string eventText)
+    {
+        eventLog.Add(eventText);
+
+        // Limite la taille du journal à 10 événements
+        if (eventLog.Count > 5)
+        {
+            eventLog.RemoveAt(0);
+        }
     }
 }

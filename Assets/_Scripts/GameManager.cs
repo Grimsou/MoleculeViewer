@@ -4,6 +4,10 @@ using System.Collections.Generic;
 
 public class GameManager : MonoBehaviour
 {
+    private CustomActionManager eventManager;
+
+    public int eventLogSize;
+
     public Button startButton;
     public Button pauseButton;
     public Button stopButton;
@@ -19,9 +23,26 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
+        eventManager = CustomActionManager.Instance;
+
         // Désactiver les boutons de pause et d'arrêt au démarrage
         pauseButton.interactable = false;
         stopButton.interactable = false;
+
+        // Assigner les callbacks aux boutons
+        startButton.onClick.AddListener(StartSimulation);
+        pauseButton.onClick.AddListener(PauseSimulation);
+        stopButton.onClick.AddListener(StopSimulation);
+
+        // S'abonner aux événements
+        eventManager.OnSimulationStart += OnSimulationStart;
+        eventManager.OnSimulationEnd += OnSimulationEnd;
+        eventManager.OnSimulationPause += OnSimulationPause;
+
+        // S'abonner aux événements
+        eventManager.OnAtomCollide += OnAtomCollide;
+        eventManager.OnAtomDies += OnAtomDies;
+        eventManager.OnMoleculeSpawn += OnMoleculeSpawn;
     }
 
     public void StartSimulation()
@@ -34,6 +55,7 @@ public class GameManager : MonoBehaviour
         stopButton.interactable = true;
 
         // Logique pour démarrer la simulation
+        eventManager.TriggerSimulationStart();
     }
 
     public void PauseSimulation()
@@ -51,6 +73,7 @@ public class GameManager : MonoBehaviour
         }
 
         // Logique pour mettre en pause la simulation
+        eventManager.TriggerSimulationPause();
     }
 
     public void StopSimulation()
@@ -63,24 +86,66 @@ public class GameManager : MonoBehaviour
         stopButton.interactable = false;
 
         // Logique pour arrêter la simulation
+        eventManager.TriggerSimulationEnd();
     }
 
     public void AddEventLog(string eventMessage)
     {
         eventLog.Add(eventMessage);
+        
+        // Limite la taille du journal à x événements
+        if (eventLog.Count > eventLogSize)
+        {
+            eventLog.RemoveAt(0);
+        }
+        
         UpdateEventLogText();
     }
 
     private void UpdateEventLogText()
     {
-        // Afficher les événements les plus récents dans le journal des événements
-        string logText = "";
-        int startIndex = Mathf.Max(0, eventLog.Count - 5); // Afficher les 5 derniers événements
-        for (int i = startIndex; i < eventLog.Count; i++)
+        // Effacer le texte précédent
+        eventLogText.text = "";
+
+        // Parcourir la liste des événements enregistrés dans le GameManager
+        foreach (string eventText in eventLog)
         {
-            logText += eventLog[i] + "\n";
+            // Ajouter le texte de chaque événement au journal
+            eventLogText.text += eventText + "\n";
         }
-        eventLogText.text = logText;
+    }
+
+    private void OnAtomCollide(AtomeBehaviour atom1, AtomeBehaviour atom2)
+    {
+        AddEventLog("Atom Collide");
+    }
+
+    private void OnAtomDies(AtomeBehaviour atom)
+    {
+        AddEventLog("Atom Dies");
+    }
+
+    private void OnMoleculeSpawn(Molecule molecule)
+    {
+        AddEventLog("Molecule Spawn");
+    }
+
+    private void OnSimulationStart()
+    {
+        AddEventLog("Simulation Start");
+        // Mettez ici votre code pour traiter l'événement de démarrage de la simulation
+    }
+
+    private void OnSimulationEnd()
+    {
+        AddEventLog("Simulation End");
+        // Mettez ici votre code pour traiter l'événement de fin de la simulation
+    }
+
+    private void OnSimulationPause()
+    {
+        AddEventLog("Simulation Pause");
+        // Mettez ici votre code pour traiter l'événement de mise en pause de la simulation
     }
 
     public void ShowObjectData(GameObject obj)
