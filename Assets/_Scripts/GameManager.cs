@@ -23,8 +23,36 @@ public class GameManager : MonoBehaviour
 
     private int selectableLayer;
 
-    private List<AtomeBehaviour> atomeBehaviours;
-    private Dictionary<AtomeBehaviour, Vector3> atomeInitialPositions;
+    private List<AtomeBehaviour> atomBehaviours;
+    private List<MoleculeBehaviour> moleculeBehaviours;
+
+    private Dictionary<GameObject, ObjectData> objectDataMap = new Dictionary<GameObject, ObjectData>();
+    private Dictionary<GameObject, ObjectState> objectStateMap = new Dictionary<GameObject, ObjectState>();
+    private Dictionary<GameObject, Rigidbody> objectRigidbodyMap = new Dictionary<GameObject, Rigidbody>();
+
+    private enum ObjectState
+    {
+        Active,
+        Inactive
+    }
+
+    private class ObjectData
+    {
+        public Vector3 position;
+        public Quaternion rotation;
+        public Vector3 scale;
+        public Vector3 velocity;
+        public Vector3 angularVelocity;
+
+        public ObjectData(Vector3 position, Quaternion rotation, Vector3 scale, Vector3 velocity, Vector3 angularVelocity)
+        {
+            this.position = position;
+            this.rotation = rotation;
+            this.scale = scale;
+            this.velocity = velocity;
+            this.angularVelocity = angularVelocity;
+        }
+    }
 
     private void Start()
     {
@@ -63,6 +91,7 @@ public class GameManager : MonoBehaviour
 
         // Logique pour démarrer la simulation
         eventManager.TriggerSimulationStart();
+        AnimateObjects();
     }
 
     public void PauseSimulation()
@@ -73,10 +102,13 @@ public class GameManager : MonoBehaviour
         if (isSimulationPaused)
         {
             pauseButton.GetComponentInChildren<Text>().text = "Play";
+            FreezeObjects();
         }
         else
         {
             pauseButton.GetComponentInChildren<Text>().text = "Pause";
+            ResumeObjects();
+            AnimateObjects();
         }
 
         // Logique pour mettre en pause la simulation
@@ -94,9 +126,8 @@ public class GameManager : MonoBehaviour
 
         // Logique pour arrêter la simulation
         eventManager.TriggerSimulationEnd();
-
-        // Réinitialiser les positions des atomes
-        ResetAtomPositions();
+        ResetObjectPositions();
+        ResetObjectDataAndState();
     }
 
     public void AddEventLog(string eventMessage)
@@ -144,7 +175,7 @@ public class GameManager : MonoBehaviour
     {
         AddEventLog("Simulation Start");
         // Mettez ici votre code pour traiter l'événement de démarrage de la simulation
-
+        AnimateObjects();
     }
 
     private void OnSimulationEnd()
@@ -223,41 +254,149 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    private void ResetAtomPositions()
+    private void ResetObjectPositions()
     {
-        foreach (var pair in atomeInitialPositions)
+        foreach (KeyValuePair<GameObject, ObjectData> pair in objectDataMap)
         {
-            pair.Key.transform.position = pair.Value;
+            GameObject obj = pair.Key;
+            ObjectData objectData = pair.Value;
+
+            obj.transform.position = objectData.position;
+            obj.transform.rotation = objectData.rotation;
+            obj.transform.localScale = objectData.scale;
+        }
+    }
+
+    private void ResetObjectDataAndState()
+    {
+        objectDataMap.Clear();
+        objectStateMap.Clear();
+        objectRigidbodyMap.Clear();
+    }
+
+    private void RegisterObject(GameObject obj)
+    {
+        if (obj.TryGetComponent(out AtomeBehaviour atomBehaviour))
+        {
+            if (atomBehaviours == null)
+            {
+                atomBehaviours = new List<AtomeBehaviour>();
+            }
+
+            atomBehaviours.Add(atomBehaviour);
+        }
+        else if (obj.TryGetComponent(out MoleculeBehaviour moleculeBehaviour))
+        {
+            if (moleculeBehaviours == null)
+            {
+                moleculeBehaviours = new List<MoleculeBehaviour>();
+            }
+
+            moleculeBehaviours.Add(moleculeBehaviour);
+        }
+
+        Rigidbody rb = obj.GetComponent<Rigidbody>();
+        if (rb != null)
+        {
+            objectRigidbodyMap[obj] = rb;
+        }
+
+        objectDataMap[obj] = new ObjectData(obj.transform.position, obj.transform.rotation, obj.transform.localScale, rb.velocity, rb.angularVelocity);
+        objectStateMap[obj] = ObjectState.Active;
+    }
+
+    private void AnimateObjects()
+    {
+        foreach (KeyValuePair<GameObject, ObjectState> pair in objectStateMap)
+        {
+            GameObject obj = pair.Key;
+            ObjectState objectState = pair.Value;
+
+            if (objectState == ObjectState.Active)
+            {
+                Rigidbody rb = objectRigidbodyMap[obj];
+                rb.isKinematic = false;
+                rb.velocity = objectDataMap[obj].velocity;
+                rb.angularVelocity = objectDataMap[obj].angularVelocity;
+            }
+        }
+    }
+
+    private void FreezeObjects()
+    {
+        foreach (KeyValuePair<GameObject, ObjectState> pair in objectStateMap)
+        {
+            GameObject obj = pair.Key;
+            ObjectState objectState = pair.Value;
+
+            if (objectState == ObjectState.Active)
+            {
+                Rigidbody rb = objectRigidbodyMap[obj];
+                rb.isKinematic = true;
+            }
+        }
+    }
+
+    private void ResumeObjects()
+    {
+        foreach (KeyValuePair<GameObject, ObjectState> pair in objectStateMap)
+        {
+            GameObject obj = pair.Key;
+            ObjectState objectState = pair.Value;
+
+            if (objectState == ObjectState.Active)
+            {
+                Rigidbody rb = objectRigidbodyMap[obj];
+                rb.isKinematic = false;
+            }
         }
     }
 
     public void RegisterAtom(AtomeBehaviour atomBehaviour)
     {
-        if (atomeBehaviours == null)
-        {
-            atomeBehaviours = new List<AtomeBehaviour>();
-        }
-
-        atomeBehaviours.Add(atomBehaviour);
-
-        if (atomeInitialPositions == null)
-        {
-            atomeInitialPositions = new Dictionary<AtomeBehaviour, Vector3>();
-        }
-
-        atomeInitialPositions.Add(atomBehaviour, atomBehaviour.transform.position);
+        RegisterObject(atomBehaviour.gameObject);
     }
 
     public void UnregisterAtom(AtomeBehaviour atomBehaviour)
     {
-        if (atomeBehaviours != null && atomeBehaviours.Contains(atomBehaviour))
+        if (atomBehaviours != null && atomBehaviours.Contains(atomBehaviour))
         {
-            atomeBehaviours.Remove(atomBehaviour);
+            atomBehaviours.Remove(atomBehaviour);
         }
 
-        if (atomeInitialPositions != null && atomeInitialPositions.ContainsKey(atomBehaviour))
+        UnregisterObject(atomBehaviour.gameObject);
+    }
+
+    public void RegisterMolecule(MoleculeBehaviour moleculeBehaviour)
+    {
+        RegisterObject(moleculeBehaviour.gameObject);
+    }
+
+    public void UnregisterMolecule(MoleculeBehaviour moleculeBehaviour)
+    {
+        if (moleculeBehaviours != null && moleculeBehaviours.Contains(moleculeBehaviour))
         {
-            atomeInitialPositions.Remove(atomBehaviour);
+            moleculeBehaviours.Remove(moleculeBehaviour);
+        }
+
+        UnregisterObject(moleculeBehaviour.gameObject);
+    }
+
+    private void UnregisterObject(GameObject obj)
+    {
+        if (objectDataMap.ContainsKey(obj))
+        {
+            objectDataMap.Remove(obj);
+        }
+
+        if (objectStateMap.ContainsKey(obj))
+        {
+            objectStateMap.Remove(obj);
+        }
+
+        if (objectRigidbodyMap.ContainsKey(obj))
+        {
+            objectRigidbodyMap.Remove(obj);
         }
     }
 }

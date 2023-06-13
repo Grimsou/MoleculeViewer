@@ -7,41 +7,21 @@ public class AtomeBehaviour : MonoBehaviour
     [SerializeField] private float Poids;
 
     public Atome AtomeData { get; set; }
-
-    private GameManager gameManager;
+    private Rigidbody rb;
+    private bool isFrozen = false;
 
     private void Awake()
     {
-        gameManager = FindObjectOfType<GameManager>();
+        rb = GetComponent<Rigidbody>();
     }
 
-    private void OnEnable()
-    {
-        gameManager.RegisterAtom(this);
-        CustomActionManager.Instance.OnSimulationStart += AnimateAtom;
-        CustomActionManager.Instance.OnSimulationPause += FreezeAtom;
-    }
-
-    private void OnDisable()
-    {
-        gameManager.UnregisterAtom(this);
-        CustomActionManager.Instance.OnSimulationStart -= AnimateAtom;
-        CustomActionManager.Instance.OnSimulationPause -= FreezeAtom;
-    }
-    
     private void Start()
     {
         AtomeData = new Atome(Nom, Poids);
-        Rigidbody rb = GetComponent<Rigidbody>();
-        if (rb != null)
-        {
-            float forceMagnitude = 15f; // Change this to whatever value you like
-            Vector3 randomDirection = Random.onUnitSphere;
-            rb.AddForce(randomDirection * forceMagnitude, ForceMode.Impulse);
-        }
+        FreezeObject();
     }
 
-    private void OnCollisionEnter(Collision collision)
+    public virtual void OnCollisionEnter(Collision collision)
     {
         AtomeBehaviour otherAtome = collision.gameObject.GetComponent<AtomeBehaviour>();
         if (otherAtome != null && !otherAtome.gameObject.CompareTag("In Collision"))
@@ -82,27 +62,41 @@ public class AtomeBehaviour : MonoBehaviour
         // Déclencher l'action OnAtomDies
         CustomActionManager.Instance.TriggerAtomDies(this);
     }
-    
-    private void AnimateAtom()
+
+    public void AnimateObject()
     {
-        // Ajouter ici la logique d'animation de l'atome pendant la simulation
-        Rigidbody rb = GetComponent<Rigidbody>();
-        if (rb != null)
+        if (isFrozen)
         {
+            rb.isKinematic = false;
             float forceMagnitude = 15f; // Change this to whatever value you like
             Vector3 randomDirection = Random.onUnitSphere;
             rb.AddForce(randomDirection * forceMagnitude, ForceMode.Impulse);
+            rb.WakeUp();
+            isFrozen = false;
         }
     }
 
-    private void FreezeAtom()
+    public void FreezeObject()
     {
-        // Ajouter ici la logique pour immobiliser l'atome pendant la pause de la simulation
-        Rigidbody rb = GetComponent<Rigidbody>();
-        if (rb != null)
+        if (!isFrozen)
         {
-            rb.velocity = Vector3.zero;
-            rb.angularVelocity = Vector3.zero;
+            rb.isKinematic = true;
+            rb.Sleep();
+            isFrozen = true;
         }
+    }
+
+    private void OnEnable()
+    {
+        CustomActionManager.Instance.OnSimulationStart += AnimateObject;
+        CustomActionManager.Instance.OnSimulationPause += FreezeObject;
+        CustomActionManager.Instance.OnSimulationEnd += FreezeObject;
+    }
+
+    private void OnDisable()
+    {
+        CustomActionManager.Instance.OnSimulationStart -= AnimateObject;
+        CustomActionManager.Instance.OnSimulationPause -= FreezeObject;
+        CustomActionManager.Instance.OnSimulationEnd -= FreezeObject;
     }
 }
