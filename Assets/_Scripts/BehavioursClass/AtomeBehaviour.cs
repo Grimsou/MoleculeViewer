@@ -1,27 +1,20 @@
 using UnityEngine;
 
-public class AtomeBehaviour : MonoBehaviour
+public class AtomeBehaviour : PhysicObjectBehaviour
 {
     [SerializeField] private GameObject MoleculePrefab;
     [SerializeField] private string Nom;
     [SerializeField] private float Poids;
 
     public Atome AtomeData { get; set; }
-    private Rigidbody rb;
-    private bool isFrozen = false;
 
-    private void Awake()
+    protected override void Start()
     {
-        rb = GetComponent<Rigidbody>();
-    }
-
-    private void Start()
-    {
+        base.Start();
         AtomeData = new Atome(Nom, Poids);
-        FreezeObject();
     }
 
-    public virtual void OnCollisionEnter(Collision collision)
+    public void OnCollisionEnter(Collision collision)
     {
         AtomeBehaviour otherAtome = collision.gameObject.GetComponent<AtomeBehaviour>();
         if (otherAtome != null && !otherAtome.gameObject.CompareTag("In Collision"))
@@ -62,39 +55,18 @@ public class AtomeBehaviour : MonoBehaviour
         // Déclencher l'action OnAtomDies
         CustomActionManager.Instance.TriggerAtomDies(this);
     }
-
-    public void AnimateObject()
+    
+    protected override void OnEnable()
     {
-        if (isFrozen)
-        {
-            rb.isKinematic = false;
-            float forceMagnitude = 15f; // Change this to whatever value you like
-            Vector3 randomDirection = Random.onUnitSphere;
-            rb.AddForce(randomDirection * forceMagnitude, ForceMode.Impulse);
-            rb.WakeUp();
-            isFrozen = false;
-        }
-    }
-
-    public void FreezeObject()
-    {
-        if (!isFrozen)
-        {
-            rb.isKinematic = true;
-            rb.Sleep();
-            isFrozen = true;
-        }
-    }
-
-    private void OnEnable()
-    {
+        base.OnEnable();
         CustomActionManager.Instance.OnSimulationStart += AnimateObject;
         CustomActionManager.Instance.OnSimulationPause += FreezeObject;
         CustomActionManager.Instance.OnSimulationEnd += FreezeObject;
     }
 
-    private void OnDisable()
+    protected override void OnDisable()
     {
+        base.OnDisable();
         CustomActionManager.Instance.OnSimulationStart -= AnimateObject;
         CustomActionManager.Instance.OnSimulationPause -= FreezeObject;
         CustomActionManager.Instance.OnSimulationEnd -= FreezeObject;

@@ -1,36 +1,53 @@
 using UnityEngine;
 
-public class MoleculeBehaviour : PhysicObjectBehaviour
+public class PhysicObjectBehaviour : MonoBehaviour
 {
-    public Molecule MoleculeData { get; set; }
+    private bool isFrozen = false;
+    private Rigidbody rb;
 
-    protected override void Start()
+    protected virtual void Awake()
     {
-        base.Start();
+        rb = GetComponent<Rigidbody>();
+    }
 
-        var rb = GetComponent<Rigidbody>();
-        if (rb != null)
+    protected virtual void Start()
+    {
+        FreezeObject();
+    }
+
+    public void AnimateObject()
+    {
+        if (isFrozen)
         {
+            rb.isKinematic = false;
             float forceMagnitude = 15f; // Change this to whatever value you like
             Vector3 randomDirection = Random.onUnitSphere;
             rb.AddForce(randomDirection * forceMagnitude, ForceMode.Impulse);
+            rb.WakeUp();
+            isFrozen = false;
         }
     }
 
-    protected override void OnEnable()
+    public void FreezeObject()
     {
-        base.OnEnable();
+        if (!isFrozen)
+        {
+            rb.isKinematic = true;
+            rb.Sleep();
+            isFrozen = true;
+        }
+    }
 
+    protected virtual void OnEnable()
+    {
         // S'abonner aux événements de simulation
         CustomActionManager.Instance.OnSimulationStart += AnimateObject;
         CustomActionManager.Instance.OnSimulationPause += FreezeObject;
         CustomActionManager.Instance.OnSimulationEnd += FreezeObject;
     }
 
-    protected override void OnDisable()
+    protected virtual void OnDisable()
     {
-        base.OnDisable();
-
         // Se désabonner des événements de simulation
         CustomActionManager.Instance.OnSimulationStart -= AnimateObject;
         CustomActionManager.Instance.OnSimulationPause -= FreezeObject;
