@@ -67,7 +67,7 @@ public class GameManager : MonoBehaviour
         pauseButton.onClick.AddListener(PauseSimulation);
         stopButton.onClick.AddListener(StopSimulation);
 
-        // S'abonner aux événements
+        // S'abonner aux événements de simulation
         eventManager.OnSimulationStart += OnSimulationStart;
         eventManager.OnSimulationEnd += OnSimulationEnd;
         eventManager.OnSimulationPause += OnSimulationPause;
@@ -91,7 +91,9 @@ public class GameManager : MonoBehaviour
 
         // Logique pour démarrer la simulation
         eventManager.TriggerSimulationStart();
-        AnimateObjects();
+
+        // Désactiver le bouton Start
+        startButton.interactable = false;
     }
 
     public void PauseSimulation()
@@ -102,17 +104,23 @@ public class GameManager : MonoBehaviour
         if (isSimulationPaused)
         {
             pauseButton.GetComponentInChildren<Text>().text = "Play";
-            FreezeObjects();
+            //FreezeObjects();
         }
         else
         {
             pauseButton.GetComponentInChildren<Text>().text = "Pause";
-            ResumeObjects();
-            AnimateObjects();
+            //ResumeObjects();
         }
 
-        // Logique pour mettre en pause la simulation
-        eventManager.TriggerSimulationPause();
+        // Logique pour mettre en pause ou reprendre la simulation
+        if (isSimulationPaused)
+        {
+            eventManager.TriggerSimulationPause();
+        }
+        else
+        {
+            eventManager.TriggerSimulationStart();
+        }
     }
 
     public void StopSimulation()
@@ -128,6 +136,9 @@ public class GameManager : MonoBehaviour
         eventManager.TriggerSimulationEnd();
         ResetObjectPositions();
         ResetObjectDataAndState();
+
+        // Réactiver le bouton Start
+        startButton.interactable = true;
     }
 
     public void AddEventLog(string eventMessage)
@@ -175,7 +186,6 @@ public class GameManager : MonoBehaviour
     {
         AddEventLog("Simulation Start");
         // Mettez ici votre code pour traiter l'événement de démarrage de la simulation
-        AnimateObjects();
     }
 
     private void OnSimulationEnd()
@@ -303,53 +313,6 @@ public class GameManager : MonoBehaviour
 
         objectDataMap[obj] = new ObjectData(obj.transform.position, obj.transform.rotation, obj.transform.localScale, rb.velocity, rb.angularVelocity);
         objectStateMap[obj] = ObjectState.Active;
-    }
-
-    private void AnimateObjects()
-    {
-        foreach (KeyValuePair<GameObject, ObjectState> pair in objectStateMap)
-        {
-            GameObject obj = pair.Key;
-            ObjectState objectState = pair.Value;
-
-            if (objectState == ObjectState.Active)
-            {
-                Rigidbody rb = objectRigidbodyMap[obj];
-                rb.isKinematic = false;
-                rb.velocity = objectDataMap[obj].velocity;
-                rb.angularVelocity = objectDataMap[obj].angularVelocity;
-            }
-        }
-    }
-
-    private void FreezeObjects()
-    {
-        foreach (KeyValuePair<GameObject, ObjectState> pair in objectStateMap)
-        {
-            GameObject obj = pair.Key;
-            ObjectState objectState = pair.Value;
-
-            if (objectState == ObjectState.Active)
-            {
-                Rigidbody rb = objectRigidbodyMap[obj];
-                rb.isKinematic = true;
-            }
-        }
-    }
-
-    private void ResumeObjects()
-    {
-        foreach (KeyValuePair<GameObject, ObjectState> pair in objectStateMap)
-        {
-            GameObject obj = pair.Key;
-            ObjectState objectState = pair.Value;
-
-            if (objectState == ObjectState.Active)
-            {
-                Rigidbody rb = objectRigidbodyMap[obj];
-                rb.isKinematic = false;
-            }
-        }
     }
 
     public void RegisterAtom(AtomeBehaviour atomBehaviour)

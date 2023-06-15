@@ -1,39 +1,27 @@
 using UnityEngine;
+using UnityEngine.UI;
 
 public class CameraController : MonoBehaviour
 {
     [Header("Paramètres de Rotation")]
-    [Tooltip("Sensibilité de la rotation de la souris.")]
     [SerializeField] private float mouseSensitivity = 360.0f;
 
     [Header("Paramètres de Zoom")]
-    [Tooltip("Vitesse de zoom de la caméra.")]
     [SerializeField] private float zoomSpeed = 10.0f;
-    [Tooltip("Niveau de zoom minimum autorisé.")]
     [SerializeField] private float minZoom = 10.0f;
-    [Tooltip("Niveau de zoom maximum autorisé.")]
     [SerializeField] private float maxZoom = 50.0f;
 
     [Header("Paramètres de Mouvement")]
-    [Tooltip("Vitesse de déplacement de la caméra.")]
     [SerializeField] private float moveSpeed = 25.0f;
 
     [Header("Touches de Contrôle")]
-    [Tooltip("Touche pour avancer.")]
     [SerializeField] private KeyCode forwardKey = KeyCode.Z;
-    [Tooltip("Touche pour reculer.")]
     [SerializeField] private KeyCode backwardKey = KeyCode.S;
-    [Tooltip("Touche pour monter.")]
     [SerializeField] private KeyCode upKey = KeyCode.LeftShift;
-    [Tooltip("Touche pour descendre.")]    
     [SerializeField] private KeyCode downKey = KeyCode.LeftAlt;
-    [Tooltip("Touche pour se déplacer à gauche.")]
     [SerializeField] private KeyCode leftKey = KeyCode.Q;
-    [Tooltip("Touche pour se déplacer à droite.")]
     [SerializeField] private KeyCode rightKey = KeyCode.D;
-    [Tooltip("Touche pour réinitialiser la position de la caméra.")]
     [SerializeField] private KeyCode resetKey = KeyCode.T;
-    [Tooltip("Touche pour aligner la caméra avec un objet.")]
     [SerializeField] private KeyCode alignKey = KeyCode.F;
 
     private Camera mainCamera;
