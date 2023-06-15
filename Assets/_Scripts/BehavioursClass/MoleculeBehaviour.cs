@@ -9,12 +9,8 @@ public class MoleculeBehaviour : PhysicObjectBehaviour
         base.Start();
 
         var rb = GetComponent<Rigidbody>();
-        if (rb != null)
-        {
-            float forceMagnitude = 15f; // Change this to whatever value you like
-            Vector3 randomDirection = Random.onUnitSphere;
-            rb.AddForce(randomDirection * forceMagnitude, ForceMode.Impulse);
-        }
+        
+        AnimateObject();
     }
 
     protected override void OnEnable()

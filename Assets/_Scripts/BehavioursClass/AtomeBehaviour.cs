@@ -22,7 +22,8 @@ public class AtomeBehaviour : PhysicObjectBehaviour
             Molecule molecule = new Molecule(AtomeData, otherAtome.AtomeData);
 
             // Instancier le préfabriqué de la molécule au point de collision
-            GameObject newMoleculeObject = Instantiate(MoleculePrefab, collision.GetContact(0).point, Quaternion.identity);
+            GameObject newMoleculeObject =
+                Instantiate(MoleculePrefab, collision.GetContact(0).point, Quaternion.identity);
 
             // Définir la MoleculeData du script MoleculeBehaviour sur la nouvelle molécule
             MoleculeBehaviour moleculeBehaviour = newMoleculeObject.GetComponent<MoleculeBehaviour>();
@@ -46,7 +47,8 @@ public class AtomeBehaviour : PhysicObjectBehaviour
             }
 
             // Déclencher l'action OnMoleculeSpawn
-            CustomActionManager.Instance.TriggerMoleculeSpawn(newMoleculeObject.GetComponent<MoleculeBehaviour>().MoleculeData);
+            CustomActionManager.Instance.TriggerMoleculeSpawn(newMoleculeObject.GetComponent<MoleculeBehaviour>()
+                .MoleculeData);
         }
     }
 
@@ -55,7 +57,7 @@ public class AtomeBehaviour : PhysicObjectBehaviour
         // Déclencher l'action OnAtomDies
         CustomActionManager.Instance.TriggerAtomDies(this);
     }
-    
+
     protected override void OnEnable()
     {
         base.OnEnable();

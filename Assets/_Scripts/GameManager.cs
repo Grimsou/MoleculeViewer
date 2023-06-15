@@ -44,7 +44,8 @@ public class GameManager : MonoBehaviour
         public Vector3 velocity;
         public Vector3 angularVelocity;
 
-        public ObjectData(Vector3 position, Quaternion rotation, Vector3 scale, Vector3 velocity, Vector3 angularVelocity)
+        public ObjectData(Vector3 position, Quaternion rotation, Vector3 scale, Vector3 velocity,
+            Vector3 angularVelocity)
         {
             this.position = position;
             this.rotation = rotation;
@@ -136,6 +137,7 @@ public class GameManager : MonoBehaviour
         eventManager.TriggerSimulationEnd();
         ResetObjectPositions();
         ResetObjectDataAndState();
+        RecreateMissingAtoms();
 
         // Réactiver le bouton Start
         startButton.interactable = true;
@@ -271,9 +273,12 @@ public class GameManager : MonoBehaviour
             GameObject obj = pair.Key;
             ObjectData objectData = pair.Value;
 
-            obj.transform.position = objectData.position;
-            obj.transform.rotation = objectData.rotation;
-            obj.transform.localScale = objectData.scale;
+            if (obj != null)
+            {
+                obj.transform.position = objectData.position;
+                obj.transform.rotation = objectData.rotation;
+                obj.transform.localScale = objectData.scale;
+            }
         }
     }
 
@@ -311,7 +316,8 @@ public class GameManager : MonoBehaviour
             objectRigidbodyMap[obj] = rb;
         }
 
-        objectDataMap[obj] = new ObjectData(obj.transform.position, obj.transform.rotation, obj.transform.localScale, rb.velocity, rb.angularVelocity);
+        objectDataMap[obj] = new ObjectData(obj.transform.position, obj.transform.rotation, obj.transform.localScale,
+            rb.velocity, rb.angularVelocity);
         objectStateMap[obj] = ObjectState.Active;
     }
 
@@ -361,5 +367,29 @@ public class GameManager : MonoBehaviour
         {
             objectRigidbodyMap.Remove(obj);
         }
+    }
+
+    public void RecreateMissingAtoms()
+    {
+        List<AtomeBehaviour> missingAtoms = new List<AtomeBehaviour>();
+
+        foreach (AtomeBehaviour atomBehaviour in atomBehaviours)
+        {
+            if (atomBehaviour == null)
+            {
+                missingAtoms.Add(atomBehaviour);
+            }
+        }
+
+        foreach (AtomeBehaviour missingAtom in missingAtoms)
+        {
+            GameObject atomPrefab = Resources.Load<GameObject>("Assets/Prefabs/AtomPrefab.prefab");
+            GameObject newAtom =
+                Instantiate(atomPrefab, missingAtom.transform.position, missingAtom.transform.rotation);
+            newAtom.transform.localScale = missingAtom.transform.localScale;
+
+            RegisterAtom(newAtom.GetComponent<AtomeBehaviour>());
+        }
+
     }
 }
