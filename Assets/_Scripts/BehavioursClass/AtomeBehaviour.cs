@@ -1,5 +1,4 @@
 using UnityEngine;
-
 public class AtomeBehaviour : PhysicObjectBehaviour
 {
     [SerializeField] private GameObject MoleculePrefab;
@@ -7,7 +6,6 @@ public class AtomeBehaviour : PhysicObjectBehaviour
     [SerializeField] private float Poids;
 
     public Atome AtomeData { get; set; }
-
     protected override void Start()
     {
         base.Start();

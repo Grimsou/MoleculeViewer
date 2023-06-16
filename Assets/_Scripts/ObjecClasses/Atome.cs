@@ -1,5 +1,5 @@
 [System.Serializable]
-public class Atome
+public class Atome 
 {
     public string Nom { get; set; }
     public float Poids { get; set; }

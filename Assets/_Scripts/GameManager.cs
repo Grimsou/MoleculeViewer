@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 using System.Collections.Generic;
 
 public class GameManager : MonoBehaviour
@@ -18,6 +19,7 @@ public class GameManager : MonoBehaviour
 
     private bool isSimulationRunning = false;
     private bool isSimulationPaused = false;
+    private bool isUpdatingEventLog = false; // Indicateur pour empêcher les mises à jour simultanées
     private List<string> eventLog = new List<string>();
     private GameObject selectedObject;
 
@@ -57,6 +59,7 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
+        DontDestroyOnLoad(this);
         eventManager = CustomActionManager.Instance;
 
         // Désactiver les boutons de pause et d'arrêt au démarrage
@@ -105,12 +108,12 @@ public class GameManager : MonoBehaviour
         if (isSimulationPaused)
         {
             pauseButton.GetComponentInChildren<Text>().text = "Play";
-            //FreezeObjects();
+            // FreezeObjects();
         }
         else
         {
             pauseButton.GetComponentInChildren<Text>().text = "Pause";
-            //ResumeObjects();
+            // ResumeObjects();
         }
 
         // Logique pour mettre en pause ou reprendre la simulation
@@ -135,37 +138,53 @@ public class GameManager : MonoBehaviour
 
         // Logique pour arrêter la simulation
         eventManager.TriggerSimulationEnd();
-        ResetObjectPositions();
-        ResetObjectDataAndState();
-        RecreateMissingAtoms();
 
-        // Réactiver le bouton Start
-        startButton.interactable = true;
+        // Recharger la scène complète pour réinitialiser la simulation
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 
     public void AddEventLog(string eventMessage)
     {
         eventLog.Add(eventMessage);
 
-        // Limite la taille du journal à x événements
+        // Limiter la taille du journal à x événements
         if (eventLog.Count > eventLogSize)
         {
             eventLog.RemoveAt(0);
         }
 
-        UpdateEventLogText();
+        // Mettre à jour le texte du journal uniquement si aucune mise à jour n'est déjà en cours
+        if (!isUpdatingEventLog)
+        {
+            UpdateEventLogText();
+        }
     }
 
     private void UpdateEventLogText()
     {
-        // Effacer le texte précédent
-        eventLogText.text = "";
-
-        // Parcourir la liste des événements enregistrés dans le GameManager
-        foreach (string eventText in eventLog)
+        if(eventLogText != null)
         {
-            // Ajouter le texte de chaque événement au journal
-            eventLogText.text += eventText + "\n";
+            // Vérifier si une mise à jour du journal d'événements est déjà en cours
+            if (isUpdatingEventLog)
+            {
+                return;
+            }
+
+            // Marquer la mise à jour du journal d'événements comme en cours
+            isUpdatingEventLog = true;
+
+            // Effacer le texte précédent
+            eventLogText.text = "";
+
+            // Parcourir la liste des événements enregistrés dans le GameManager
+            foreach (string eventText in eventLog)
+            {
+                // Ajouter le texte de chaque événement au journal
+                eventLogText.text += eventText + "\n";
+            }
+
+            // Marquer la mise à jour du journal d'événements comme terminée
+            isUpdatingEventLog = false;
         }
     }
 
@@ -383,9 +402,8 @@ public class GameManager : MonoBehaviour
 
         foreach (AtomeBehaviour missingAtom in missingAtoms)
         {
-            GameObject atomPrefab = Resources.Load<GameObject>("Assets/Prefabs/AtomPrefab.prefab");
-            GameObject newAtom =
-                Instantiate(atomPrefab, missingAtom.transform.position, missingAtom.transform.rotation);
+            GameObject atomPrefab = Resources.Load<GameObject>("Prefabs/AtomPrefab");
+            GameObject newAtom = Instantiate(atomPrefab, missingAtom.transform.position, missingAtom.transform.rotation);
             newAtom.transform.localScale = missingAtom.transform.localScale;
 
             RegisterAtom(newAtom.GetComponent<AtomeBehaviour>());

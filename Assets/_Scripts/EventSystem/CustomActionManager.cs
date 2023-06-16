@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
@@ -32,56 +33,132 @@ public class CustomActionManager : MonoBehaviour
     public UnityAction<GameObject> OnObjectSelected;
 
     private List<string> eventLog = new List<string>();
+    private bool isEventTriggering = false; // Indicateur pour éviter les événements pendant la destruction des objets
+
+    private void Start()
+    {
+        DontDestroyOnLoad(this);
+    }
 
     // Méthodes pour déclencher les événements
 
     public void TriggerAtomCollide(AtomeBehaviour atom1, AtomeBehaviour atom2)
     {
+        // Vérifier si la destruction des objets est déjà en cours
+        if (isEventTriggering)
+        {
+            return;
+        }
+
+        isEventTriggering = true;
+
         OnAtomCollide?.Invoke(atom1, atom2);
         Debug.Log("Atom Collide event triggered.");
         AddEventToLog("Atom Collide");
+
+        isEventTriggering = false;
     }
 
     public void TriggerAtomDies(AtomeBehaviour atom)
     {
+        // Vérifier si la destruction des objets est déjà en cours
+        if (isEventTriggering)
+        {
+            return;
+        }
+
+        isEventTriggering = true;
+
         OnAtomDies?.Invoke(atom);
         Debug.Log("Atom Dies event triggered.");
         AddEventToLog("Atom Dies");
+
+        isEventTriggering = false;
     }
 
     public void TriggerMoleculeSpawn(Molecule molecule)
     {
+        // Vérifier si la destruction des objets est déjà en cours
+        if (isEventTriggering)
+        {
+            return;
+        }
+
+        isEventTriggering = true;
+
         OnMoleculeSpawn?.Invoke(molecule);
         Debug.Log("Molecule Spawn event triggered.");
         AddEventToLog("Molecule Spawn");
+
+        isEventTriggering = false;
     }
 
     public void TriggerObjectSelected(GameObject selectedObject)
     {
+        // Vérifier si la destruction des objets est déjà en cours
+        if (isEventTriggering)
+        {
+            return;
+        }
+
+        isEventTriggering = true;
+
         OnObjectSelected?.Invoke(selectedObject);
         Debug.Log("Object Selected event triggered.");
         AddEventToLog("Object Selected");
+
+        isEventTriggering = false;
     }
 
     public void TriggerSimulationStart()
     {
+        // Vérifier si la destruction des objets est déjà en cours
+        if (isEventTriggering)
+        {
+            return;
+        }
+
+        isEventTriggering = true;
+
         OnSimulationStart?.Invoke();
         Debug.Log("Simulation Start event triggered.");
         AddEventToLog("Simulation Start");
+
+        isEventTriggering = false;
     }
 
     public void TriggerSimulationEnd()
     {
+        // Vérifier si la destruction des objets est déjà en cours
+        if (isEventTriggering)
+        {
+            return;
+        }
+
+        isEventTriggering = true;
+
         OnSimulationEnd?.Invoke();
         Debug.Log("Simulation End event triggered.");
         AddEventToLog("Simulation End");
+
+        isEventTriggering = false;
     }
 
     public void TriggerSimulationPause()
     {
+        // Vérifier si la destruction des objets est déjà en cours
+        if (isEventTriggering)
+        {
+            return;
+        }
+
+        isEventTriggering = true;
+
         OnSimulationPause?.Invoke();
         Debug.Log("Simulation Pause event triggered.");
         AddEventToLog("Simulation Pause");
+
+        isEventTriggering = false;
     }
 
     public List<string> GetEventLog()
