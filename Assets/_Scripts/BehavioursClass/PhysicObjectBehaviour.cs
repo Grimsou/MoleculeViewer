@@ -15,6 +15,9 @@ public class PhysicObjectBehaviour : MonoBehaviour
         FreezeObject();
     }
 
+    /// <summary>
+    /// Anime l'objet en le rendant dynamique et en lui appliquant une force aléatoire.
+    /// </summary>
     public void AnimateObject()
     {
         if (isFrozen)
@@ -28,6 +31,9 @@ public class PhysicObjectBehaviour : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Immobilise l'objet en le rendant cinématique.
+    /// </summary>
     public void FreezeObject()
     {
         if (!isFrozen)

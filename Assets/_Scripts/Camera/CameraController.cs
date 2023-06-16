@@ -1,33 +1,34 @@
 using UnityEngine;
-using UnityEngine.UI;
 
 public class CameraController : MonoBehaviour
 {
     [Header("Paramètres de Rotation")]
-    [SerializeField] private float mouseSensitivity = 360.0f;
+    [SerializeField, Tooltip("Sensibilité de la souris pour la rotation")] private float mouseSensitivity = 360.0f;
 
     [Header("Paramètres de Zoom")]
-    [SerializeField] private float zoomSpeed = 10.0f;
-    [SerializeField] private float minZoom = 10.0f;
-    [SerializeField] private float maxZoom = 50.0f;
+    [SerializeField, Tooltip("Vitesse de zoom")] private float zoomSpeed = 10.0f;
+    [SerializeField, Tooltip("Zoom minimum")] private float minZoom = 10.0f;
+    [SerializeField, Tooltip("Zoom maximum")] private float maxZoom = 50.0f;
 
     [Header("Paramètres de Mouvement")]
-    [SerializeField] private float moveSpeed = 25.0f;
+    [SerializeField, Tooltip("Vitesse de déplacement")] private float moveSpeed = 25.0f;
 
     [Header("Touches de Contrôle")]
-    [SerializeField] private KeyCode forwardKey = KeyCode.Z;
-    [SerializeField] private KeyCode backwardKey = KeyCode.S;
-    [SerializeField] private KeyCode upKey = KeyCode.LeftShift;
-    [SerializeField] private KeyCode downKey = KeyCode.LeftAlt;
-    [SerializeField] private KeyCode leftKey = KeyCode.Q;
-    [SerializeField] private KeyCode rightKey = KeyCode.D;
-    [SerializeField] private KeyCode resetKey = KeyCode.T;
-    [SerializeField] private KeyCode alignKey = KeyCode.F;
+    [SerializeField, Tooltip("Touche pour avancer")] private KeyCode forwardKey = KeyCode.Z;
+    [SerializeField, Tooltip("Touche pour reculer")] private KeyCode backwardKey = KeyCode.S;
+    [SerializeField, Tooltip("Touche pour monter")] private KeyCode upKey = KeyCode.LeftShift;
+    [SerializeField, Tooltip("Touche pour descendre")] private KeyCode downKey = KeyCode.LeftAlt;
+    [SerializeField, Tooltip("Touche pour aller à gauche")] private KeyCode leftKey = KeyCode.Q;
+    [SerializeField, Tooltip("Touche pour aller à droite")] private KeyCode rightKey = KeyCode.D;
+    [SerializeField, Tooltip("Touche pour réinitialiser la position")] private KeyCode resetKey = KeyCode.T;
 
     private Camera mainCamera;
     private Vector3 initialPosition;
     private Quaternion initialRotation;
 
+    /// <summary>
+    /// Initialise les valeurs de la caméra au démarrage.
+    /// </summary>
     void Start()
     {
         mainCamera = Camera.main;
@@ -35,15 +36,9 @@ public class CameraController : MonoBehaviour
         initialRotation = transform.rotation;
     }
 
-    void LateUpdate()
-    {
-        HandleMouseRotation();
-        HandleZoom();
-        HandleMovement();
-        HandleResetPosition();
-        HandleObjectAlignment();
-    }
-
+    /// <summary>
+    /// Gère la rotation de la caméra en fonction du mouvement de la souris.
+    /// </summary>
     private void HandleMouseRotation()
     {
         if (Input.GetMouseButton(1))
@@ -59,6 +54,9 @@ public class CameraController : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Gère le zoom de la caméra en fonction de la molette de la souris.
+    /// </summary>
     private void HandleZoom()
     {
         float zoomChange = Input.GetAxis("Mouse ScrollWheel") * zoomSpeed;
@@ -66,6 +64,9 @@ public class CameraController : MonoBehaviour
         mainCamera.fieldOfView = newSize;
     }
 
+    /// <summary>
+    /// Gère le déplacement de la caméra en fonction des touches de contrôle.
+    /// </summary>
     private void HandleMovement()
     {
         Vector3 direction = Vector3.zero;
@@ -98,6 +99,9 @@ public class CameraController : MonoBehaviour
         transform.position += direction * moveSpeed * Time.deltaTime;
     }
 
+    /// <summary>
+    /// Réinitialise la position et la rotation de la caméra.
+    /// </summary>
     private void HandleResetPosition()
     {
         if (Input.GetKeyDown(resetKey))
@@ -107,18 +111,15 @@ public class CameraController : MonoBehaviour
         }
     }
 
-    private void HandleObjectAlignment()
+    /// <summary>
+    /// Appelée à chaque frame après toutes les autres mises à jour.
+    /// Gère les différentes fonctionnalités de la caméra.
+    /// </summary>
+    void LateUpdate()
     {
-        if (Input.GetKeyDown(alignKey))
-        {
-            RaycastHit hit;
-            Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
-
-            if (Physics.Raycast(ray, out hit))
-            {
-                Transform selectedObject = hit.transform;
-                CustomActionManager.Instance.TriggerObjectSelected(selectedObject.gameObject);
-            }
-        }
+        HandleMouseRotation();
+        HandleZoom();
+        HandleMovement();
+        HandleResetPosition();
     }
 }

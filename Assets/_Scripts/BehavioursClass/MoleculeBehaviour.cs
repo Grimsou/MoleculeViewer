@@ -3,6 +3,7 @@ using UnityEngine;
 public class MoleculeBehaviour : PhysicObjectBehaviour
 {
     public Molecule MoleculeData { get; set; }
+
     protected override void Start()
     {
         base.Start();

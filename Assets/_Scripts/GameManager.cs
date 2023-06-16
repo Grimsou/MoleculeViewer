@@ -7,20 +7,33 @@ public class GameManager : MonoBehaviour
 {
     private CustomActionManager eventManager;
 
+    [Header("Variables d'événement")]
     public int eventLogSize;
+    private bool isUpdatingEventLog = false; // Ajout d'un indicateur pour empêcher les mises à jour simultanées
+    private List<string> eventLog = new List<string>();
 
+    [Header("Boutons")]
     public Button startButton;
     public Button pauseButton;
     public Button stopButton;
-    public Text eventLogText;
+    public Button quitButton;
+
+    [Header("Panneaux")]
     public GameObject objectDataPanel;
+    public GameObject menuPanel;
+
+    [Header("Textes")]
+    [Tooltip("Texte pour le nom de l'objet")]
     public Text objectNameText;
+    [Tooltip("Texte pour le journal d'événements")]
+    public Text eventLogText;
+    [Tooltip("Texte pour le poids de l'objet")]
     public Text objectWeightText;
+    [Tooltip("Texte pour les contrôles de caméra")]
+    public Text cameraControlsText;
 
     private bool isSimulationRunning = false;
     private bool isSimulationPaused = false;
-    private bool isUpdatingEventLog = false; // Indicateur pour empêcher les mises à jour simultanées
-    private List<string> eventLog = new List<string>();
     private GameObject selectedObject;
 
     private int selectableLayer;
@@ -65,11 +78,16 @@ public class GameManager : MonoBehaviour
         // Désactiver les boutons de pause et d'arrêt au démarrage
         pauseButton.interactable = false;
         stopButton.interactable = false;
+        quitButton.interactable = false;
 
         // Assigner les callbacks aux boutons
         startButton.onClick.AddListener(StartSimulation);
         pauseButton.onClick.AddListener(PauseSimulation);
         stopButton.onClick.AddListener(StopSimulation);
+        quitButton.onClick.AddListener(QuitApplication);
+
+        // Désactiver le panneau du menu au démarrage
+        menuPanel.SetActive(false);
 
         // S'abonner aux événements de simulation
         eventManager.OnSimulationStart += OnSimulationStart;
@@ -84,6 +102,9 @@ public class GameManager : MonoBehaviour
         selectableLayer = LayerMask.NameToLayer("Selectable");
     }
 
+    /// <summary>
+    /// Démarre la simulation.
+    /// </summary>
     public void StartSimulation()
     {
         isSimulationRunning = true;
@@ -100,6 +121,9 @@ public class GameManager : MonoBehaviour
         startButton.interactable = false;
     }
 
+    /// <summary>
+    /// Met en pause ou reprend la simulation.
+    /// </summary>
     public void PauseSimulation()
     {
         isSimulationPaused = !isSimulationPaused;
@@ -108,12 +132,12 @@ public class GameManager : MonoBehaviour
         if (isSimulationPaused)
         {
             pauseButton.GetComponentInChildren<Text>().text = "Play";
-            // FreezeObjects();
+            //FreezeObjects();
         }
         else
         {
             pauseButton.GetComponentInChildren<Text>().text = "Pause";
-            // ResumeObjects();
+            //ResumeObjects();
         }
 
         // Logique pour mettre en pause ou reprendre la simulation
@@ -127,6 +151,9 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Arrête la simulation.
+    /// </summary>
     public void StopSimulation()
     {
         isSimulationRunning = false;
@@ -143,11 +170,15 @@ public class GameManager : MonoBehaviour
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 
+    /// <summary>
+    /// Ajoute un événement au journal d'événements.
+    /// </summary>
+    /// <param name="eventMessage">Le message de l'événement.</param>
     public void AddEventLog(string eventMessage)
     {
         eventLog.Add(eventMessage);
 
-        // Limiter la taille du journal à x événements
+        // Limite la taille du journal à x événements
         if (eventLog.Count > eventLogSize)
         {
             eventLog.RemoveAt(0);
@@ -283,6 +314,12 @@ public class GameManager : MonoBehaviour
                 ShowObjectData(hit.collider.gameObject);
             }
         }
+
+        // Vérifier si l'utilisateur a appuyé sur la touche ESC pour afficher le menu
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            ToggleMenu();
+        }
     }
 
     private void ResetObjectPositions()
@@ -408,6 +445,49 @@ public class GameManager : MonoBehaviour
 
             RegisterAtom(newAtom.GetComponent<AtomeBehaviour>());
         }
+    }
 
+    private void ToggleMenu()
+    {
+        // Inverser l'état d'activation du panneau du menu
+        menuPanel.SetActive(!menuPanel.activeSelf);
+
+        // Afficher les touches du contrôleur de caméra
+        // Remplacez le texte suivant par vos propres instructions
+        cameraControlsText.text = "Contrôles de la caméra :\n\n" +
+                                  "Z : Avancer\n\n" +
+                                  "S : Reculer\n\n" +
+                                  "Q : Aller à gauche\n\n" +
+                                  "D : Aller à droite\n\n" +
+                                  "Clic droit de la souris : Rotation de la caméra\n\n" +
+                                  "Scroll de la souris : Zoom in/out\n\n"+
+                                  "LeftShit et LeftCtrl : Elevation de la caméra";
+
+
+        // Si le panneau du menu est activé, afficher les contrôles de la caméra et désactiver les interactions du jeu
+        if (menuPanel.activeSelf)
+        {
+            Time.timeScale = 0f; // Mettre en pause le jeu
+            cameraControlsText.gameObject.SetActive(true);
+            quitButton.interactable = true;
+        }
+        else
+        {
+            Time.timeScale = 1f; // Reprendre le jeu
+            cameraControlsText.gameObject.SetActive(false);
+            quitButton.interactable = false;
+        }
+
+
+        // Mettre en pause la simulation si elle est en cours
+        if (isSimulationRunning && !isSimulationPaused)
+        {
+            PauseSimulation();
+        }
+    }
+
+    private void QuitApplication()
+    {
+        Application.Quit();
     }
 }

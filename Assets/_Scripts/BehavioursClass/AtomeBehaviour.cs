@@ -1,11 +1,20 @@
 using UnityEngine;
+
 public class AtomeBehaviour : PhysicObjectBehaviour
 {
+    [Header("Préfabriqué de molécule")]
+    [Tooltip("Le préfabriqué de la molécule.")]
     [SerializeField] private GameObject MoleculePrefab;
+
+    [Header("Données de l'atome")]
+    [Tooltip("Le nom de l'atome.")]
     [SerializeField] private string Nom;
+
+    [Tooltip("Le poids de l'atome.")]
     [SerializeField] private float Poids;
 
     public Atome AtomeData { get; set; }
+
     protected override void Start()
     {
         base.Start();

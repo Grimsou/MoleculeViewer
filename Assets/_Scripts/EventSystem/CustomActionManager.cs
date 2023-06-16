@@ -23,7 +23,7 @@ public class CustomActionManager : MonoBehaviour
         }
     }
 
-    // Événements
+    [Header("Événements")]
     public UnityAction OnSimulationStart;
     public UnityAction OnSimulationEnd;
     public UnityAction OnSimulationPause;
@@ -40,8 +40,11 @@ public class CustomActionManager : MonoBehaviour
         DontDestroyOnLoad(this);
     }
 
-    // Méthodes pour déclencher les événements
-
+    /// <summary>
+    /// Déclenche l'événement de collision entre deux atomes.
+    /// </summary>
+    /// <param name="atom1">Le premier atome en collision.</param>
+    /// <param name="atom2">Le deuxième atome en collision.</param>
     public void TriggerAtomCollide(AtomeBehaviour atom1, AtomeBehaviour atom2)
     {
         // Vérifier si la destruction des objets est déjà en cours
@@ -53,12 +56,16 @@ public class CustomActionManager : MonoBehaviour
         isEventTriggering = true;
 
         OnAtomCollide?.Invoke(atom1, atom2);
-        Debug.Log("Atom Collide event triggered.");
+        Debug.Log("Événement Atom Collide déclenché.");
         AddEventToLog("Atom Collide");
 
         isEventTriggering = false;
     }
 
+    /// <summary>
+    /// Déclenche l'événement de mort d'un atome.
+    /// </summary>
+    /// <param name="atom">L'atome qui meurt.</param>
     public void TriggerAtomDies(AtomeBehaviour atom)
     {
         // Vérifier si la destruction des objets est déjà en cours
@@ -70,12 +77,16 @@ public class CustomActionManager : MonoBehaviour
         isEventTriggering = true;
 
         OnAtomDies?.Invoke(atom);
-        Debug.Log("Atom Dies event triggered.");
+        Debug.Log("Événement Atom Dies déclenché.");
         AddEventToLog("Atom Dies");
 
         isEventTriggering = false;
     }
 
+    /// <summary>
+    /// Déclenche l'événement de création d'une molécule.
+    /// </summary>
+    /// <param name="molecule">La molécule créée.</param>
     public void TriggerMoleculeSpawn(Molecule molecule)
     {
         // Vérifier si la destruction des objets est déjà en cours
@@ -87,12 +98,16 @@ public class CustomActionManager : MonoBehaviour
         isEventTriggering = true;
 
         OnMoleculeSpawn?.Invoke(molecule);
-        Debug.Log("Molecule Spawn event triggered.");
+        Debug.Log("Événement Molecule Spawn déclenché.");
         AddEventToLog("Molecule Spawn");
 
         isEventTriggering = false;
     }
 
+    /// <summary>
+    /// Déclenche l'événement de sélection d'un objet.
+    /// </summary>
+    /// <param name="selectedObject">L'objet sélectionné.</param>
     public void TriggerObjectSelected(GameObject selectedObject)
     {
         // Vérifier si la destruction des objets est déjà en cours
@@ -104,12 +119,15 @@ public class CustomActionManager : MonoBehaviour
         isEventTriggering = true;
 
         OnObjectSelected?.Invoke(selectedObject);
-        Debug.Log("Object Selected event triggered.");
+        Debug.Log("Événement Object Selected déclenché.");
         AddEventToLog("Object Selected");
 
         isEventTriggering = false;
     }
 
+    /// <summary>
+    /// Déclenche l'événement de démarrage de la simulation.
+    /// </summary>
     public void TriggerSimulationStart()
     {
         // Vérifier si la destruction des objets est déjà en cours
@@ -121,12 +139,15 @@ public class CustomActionManager : MonoBehaviour
         isEventTriggering = true;
 
         OnSimulationStart?.Invoke();
-        Debug.Log("Simulation Start event triggered.");
+        Debug.Log("Événement Simulation Start déclenché.");
         AddEventToLog("Simulation Start");
 
         isEventTriggering = false;
     }
 
+    /// <summary>
+    /// Déclenche l'événement de fin de la simulation.
+    /// </summary>
     public void TriggerSimulationEnd()
     {
         // Vérifier si la destruction des objets est déjà en cours
@@ -138,12 +159,15 @@ public class CustomActionManager : MonoBehaviour
         isEventTriggering = true;
 
         OnSimulationEnd?.Invoke();
-        Debug.Log("Simulation End event triggered.");
+        Debug.Log("Événement Simulation End déclenché.");
         AddEventToLog("Simulation End");
 
         isEventTriggering = false;
     }
 
+    /// <summary>
+    /// Déclenche l'événement de mise en pause de la simulation.
+    /// </summary>
     public void TriggerSimulationPause()
     {
         // Vérifier si la destruction des objets est déjà en cours
@@ -155,12 +179,16 @@ public class CustomActionManager : MonoBehaviour
         isEventTriggering = true;
 
         OnSimulationPause?.Invoke();
-        Debug.Log("Simulation Pause event triggered.");
+        Debug.Log("Événement Simulation Pause déclenché.");
         AddEventToLog("Simulation Pause");
 
         isEventTriggering = false;
     }
 
+    /// <summary>
+    /// Récupère le journal des événements.
+    /// </summary>
+    /// <returns>La liste des événements.</returns>
     public List<string> GetEventLog()
     {
         return eventLog;
