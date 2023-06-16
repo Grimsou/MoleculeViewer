@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 3426977895517498835}
   - component: {fileID: 3426977895517498836}
   - component: {fileID: 3426977895517498837}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Atome2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -107,7 +107,7 @@ GameObject:
   - component: {fileID: 7613160411146062551}
   - component: {fileID: 2240994387364946920}
   - component: {fileID: 3090927175923932204}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Molecule
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -184,7 +184,7 @@ GameObject:
   - component: {fileID: 3426977895837514352}
   - component: {fileID: 3426977895837514353}
   - component: {fileID: 3426977895837514354}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Atome1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
