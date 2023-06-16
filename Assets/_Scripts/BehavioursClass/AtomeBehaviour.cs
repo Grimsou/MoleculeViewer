@@ -1,58 +1,83 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
-public class AtomeBehaviour : MonoBehaviour
+public class AtomeBehaviour : PhysicObjectBehaviour
 {
-    [SerializeField]
-    public string Nom;
-    [SerializeField]
-    public float Poids;
+    [Header("Préfabriqué de molécule")]
+    [Tooltip("Le préfabriqué de la molécule.")]
+    [SerializeField] private GameObject MoleculePrefab;
 
-    public GameObject MoleculePrefab; // The Molecule prefab
+    [Header("Données de l'atome")]
+    [Tooltip("Le nom de l'atome.")]
+    [SerializeField] private string Nom;
 
-    private Atome AtomeData;
+    [Tooltip("Le poids de l'atome.")]
+    [SerializeField] private float Poids;
 
-    private void Start()
+    public Atome AtomeData { get; set; }
+
+    protected override void Start()
     {
+        base.Start();
         AtomeData = new Atome(Nom, Poids);
     }
 
-    private void OnCollisionEnter(Collision collision)
+    public void OnCollisionEnter(Collision collision)
     {
         AtomeBehaviour otherAtome = collision.gameObject.GetComponent<AtomeBehaviour>();
         if (otherAtome != null && !otherAtome.gameObject.CompareTag("In Collision"))
         {
             Molecule molecule = new Molecule(AtomeData, otherAtome.AtomeData);
 
-            // Instantiate the Molecule prefab at the collision point
-            GameObject newMoleculeObject = Instantiate(MoleculePrefab, collision.GetContact(0).point, Quaternion.identity);
+            // Instancier le préfabriqué de la molécule au point de collision
+            GameObject newMoleculeObject =
+                Instantiate(MoleculePrefab, collision.GetContact(0).point, Quaternion.identity);
 
-            // Set the MoleculeBehaviour's MoleculeData to the new molecule
+            // Définir la MoleculeData du script MoleculeBehaviour sur la nouvelle molécule
             MoleculeBehaviour moleculeBehaviour = newMoleculeObject.GetComponent<MoleculeBehaviour>();
             moleculeBehaviour.MoleculeData = molecule;
 
-            // Tag both atoms as "In Collision"
+            // Marquer les deux atomes comme étant "In Collision"
             gameObject.tag = "In Collision";
             otherAtome.gameObject.tag = "In Collision";
 
-            // Optionally, destroy the original Atom objects
+            // Supprimer les objets Atom originaux si nécessaire
             Destroy(gameObject, 0.1f);
             Destroy(otherAtome.gameObject, 0.1f);
 
-            // Add a random force to the new Molecule
+            // Ajouter une force aléatoire à la nouvelle molécule
             Rigidbody rb = newMoleculeObject.GetComponent<Rigidbody>();
             if (rb != null)
             {
-                float forceMagnitude = 5f; // Change this to whatever value you like
+                float forceMagnitude = 15f; // Change this to whatever value you like
                 Vector3 randomDirection = Random.onUnitSphere;
                 rb.AddForce(randomDirection * forceMagnitude, ForceMode.Impulse);
             }
+
+            // Déclencher l'action OnMoleculeSpawn
+            CustomActionManager.Instance.TriggerMoleculeSpawn(newMoleculeObject.GetComponent<MoleculeBehaviour>()
+                .MoleculeData);
         }
     }
 
+    private void OnDestroy()
+    {
+        // Déclencher l'action OnAtomDies
+        CustomActionManager.Instance.TriggerAtomDies(this);
+    }
 
+    protected override void OnEnable()
+    {
+        base.OnEnable();
+        CustomActionManager.Instance.OnSimulationStart += AnimateObject;
+        CustomActionManager.Instance.OnSimulationPause += FreezeObject;
+        CustomActionManager.Instance.OnSimulationEnd += FreezeObject;
+    }
+
+    protected override void OnDisable()
+    {
+        base.OnDisable();
+        CustomActionManager.Instance.OnSimulationStart -= AnimateObject;
+        CustomActionManager.Instance.OnSimulationPause -= FreezeObject;
+        CustomActionManager.Instance.OnSimulationEnd -= FreezeObject;
+    }
 }
-
-
-
